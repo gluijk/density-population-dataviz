@@ -25,7 +25,7 @@ spainpop=project(x=spainpop, y=CRS, threads=TRUE)
 spainpop
 plot(spainpop)
 abline(v=0)  # Greenwich meridian
-RESOLUTION=res(spainpop)[1]  # 0.8104684m grid resolution
+RESOLUTION=res(spainpop)[1]  # 0.8104684 km resolution
 
 # RESAMPLE raster to Full HD
 # DIMY=1080
