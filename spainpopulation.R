@@ -34,7 +34,7 @@ RESOLUTION=res(spainpop)[1]  # 0.8104684 km resolution
 # RESAMPLE raster to Full HD
 # DIMY=1080
 DIMX=1920
-DIMY=round(DIMX*nrow(spainpop)/ncol(spainpop))
+DIMY=round(DIMX*nrow(spainpop)/ncol(spainpop))  # 1662 px
 spainpoprs=rast(nrows=DIMY, ncols=DIMX, extent=ext(spainpop))
 spainpoprs=resample(x=spainpop, y=spainpoprs, method='bilinear', threads=TRUE)
 plot(spainpoprs)
