@@ -40,21 +40,19 @@ abline(v=0)  # Greenwich meridian
 DEM=matrix(as.array(spainpoprs), nrow=nrow(spainpoprs))
 hist(DEM, breaks=1000)
 DEM[is.na(DEM)]=0
+writeTIFF((DEM/max(DEM))^(1/2.2), "spainpop.tif", compression='LZW', bits.per.sample=16)
 
 # Solid map for masking in Photoshop
 DEMsolid=DEM
 DEMsolid[DEMsolid>0]=1
 writeTIFF(DEMsolid, "spainpopsolid.tif", compression='LZW', bits.per.sample=16)
 
-# Grayscale density map
-writeTIFF((DEM/max(DEM))^(1/2.2), "spainpop.tif", compression='LZW', bits.per.sample=16)
-
 
 ###########################################################
 
 # 2. FLAG DISTRIBUTION
 
-population=sum(DEM)  # total population to be splitted
+population=sum(DEM)  # total population to be split
 
 poprow=rowSums(DEM)
 poprowacum=cumsum(poprow)
@@ -78,7 +76,7 @@ writeTIFF(img, "flag.tif", compression='LZW')
 
 # 3. MEDIAN & CIRCLE DISTRIBUTION
 
-population=sum(DEM)  # total population to be splitted
+population=sum(DEM)  # total population to be split
 
 poprow=rowSums(DEM)
 poprowacum=cumsum(poprow)
@@ -103,7 +101,7 @@ img[(irowcentre+1):DIMY,1:icolcentre]=2/3
 img[(irowcentre+1):DIMY,(icolcentre+1):DIMX]=1/3
 writeTIFF(img, "quarters.tif", compression='LZW')
 
-# Check quadrants: cross population match -> NW=SE and NE=SW
+# Check that quadrants cross population match: NW=SE and NE=SW
 quad=matrix(0, nrow=2, ncol=2)
 quad[1,1]=sum(DEM[1:irowcentre, 1:icolcentre])/population  # ~22% (NW)
 quad[2,1]=sum(DEM[(irowcentre+1):DIMY, 1:icolcentre])/population  # ~28% (SW)
