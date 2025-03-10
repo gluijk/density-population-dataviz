@@ -20,21 +20,25 @@ RESOLUTION=res(spainpop)[1]  # 0.008333 degrees resolution
 # REPROJECT raster from Longitude Latitude (+proj=longlat)/WGS84
 # to Lambert Conic Conformal (+proj=lcc)/WGS84
 # by default crs="+proj=lcc +ellps=WGS84 +lat_1=33 +lat_2=45 +lon_0=0"
-CRS="+proj=lcc +ellps=WGS84 +lat_1=33 +lat_2=45 +lon_0=0 +units=km"
+CRS="+proj=lcc +ellps=WGS84 +lat_1=33 +lat_2=45 +lat_0=40 +lon_0=0 +units=km"  # default
+# CRS="+proj=lcc +ellps=WGS84 +lat_1=37 +lat_2=43 +lat_0=40 +lon_0=-3 +units=km"  # better for Peninsula
+# CRS="+proj=lcc +ellps=WGS84 +lat_1=30 +lat_2=44 +lat_0=37 +lon_0=-3 +units=km"  # better for Spain incl. Canarias
+# CRS="+proj=merc +ellps=WGS84 +datum=WGS84 +units=km"  # Mercator for Spain incl. Canarias
+
 spainpop=project(x=spainpop, y=CRS, threads=TRUE)
 spainpop
 plot(spainpop)
-abline(v=0)  # Greenwich meridian
+abline(h=0, v=0)  # centre of reference
 RESOLUTION=res(spainpop)[1]  # 0.8104684 km resolution
 
 # RESAMPLE raster to Full HD
 # DIMY=1080
 DIMX=1920
-DIMY=DIMX*nrow(spainpop)/ncol(spainpop)
+DIMY=round(DIMX*nrow(spainpop)/ncol(spainpop))
 spainpoprs=rast(nrows=DIMY, ncols=DIMX, extent=ext(spainpop))
 spainpoprs=resample(x=spainpop, y=spainpoprs, method='bilinear', threads=TRUE)
 plot(spainpoprs)
-abline(v=0)  # Greenwich meridian
+abline(h=0, v=0)  # centre of reference
 
 # Convert to matrix and save as TIFF
 DEM=matrix(as.array(spainpoprs), nrow=nrow(spainpoprs))
@@ -99,7 +103,7 @@ img=DEM*0
 img[1:irowcentre,1:icolcentre]=1
 img[(irowcentre+1):DIMY,1:icolcentre]=2/3
 img[(irowcentre+1):DIMY,(icolcentre+1):DIMX]=1/3
-writeTIFF(img, "quarters.tif", compression='LZW')
+writeTIFF(img, "quadrants.tif", compression='LZW')
 
 # Check that quadrants cross population match: NW=SE and NE=SW
 quad=matrix(0, nrow=2, ncol=2)
@@ -132,22 +136,6 @@ img=DEM*0
 img[which( ((row(img)-irowcentre))^2 + ((col(img)-icolcentre))^2 < router^2 )]=0.5
 img[which( ((row(img)-irowcentre))^2 + ((col(img)-icolcentre))^2 < rinner^2 )]=1
 writeTIFF(img, "circles.tif", compression='LZW')
-
-
-# Calculate 1/2 radius (median)
-r=0
-sumpop=0
-while (sumpop<population/2) {
-    r=r+1
-    sumpop=sum(DEM[which( ((row(DEM)-irowcentre))^2 + ((col(DEM)-icolcentre))^2 < r^2 )])
-}
-rmedian=r
-print(paste0("Radius for 1/2 of population (median): ", rmedian))  # 300
-
-# Draw circles
-img=DEM*0
-img[which( ((row(img)-irowcentre))^2 + ((col(img)-icolcentre))^2 < rmedian^2 )]=1
-writeTIFF(img, "circles2.tif", compression='LZW')
 
 
 
