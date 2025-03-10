@@ -40,7 +40,6 @@ abline(v=0)  # Greenwich meridian
 DEM=matrix(as.array(spainpoprs), nrow=nrow(spainpoprs))
 hist(DEM, breaks=1000)
 DEM[is.na(DEM)]=0
-DEM[DEM<0]=0  # let's preserve the ocean basin
 
 # Solid map for masking in Photoshop
 DEMsolid=DEM
@@ -55,7 +54,8 @@ writeTIFF((DEM/max(DEM))^(1/2.2), "spainpop.tif", compression='LZW', bits.per.sa
 
 # 2. FLAG DISTRIBUTION
 
-population=sum(DEM)  # total population to be splitted into 1/3, 2/3
+population=sum(DEM)  # total population to be splitted
+
 poprow=rowSums(DEM)
 poprowacum=cumsum(poprow)
 
@@ -78,7 +78,8 @@ writeTIFF(img, "flag.tif", compression='LZW')
 
 # 3. MEDIAN & CIRCLE DISTRIBUTION
 
-population=sum(DEM)  # total population to be splitted into 3 circles
+population=sum(DEM)  # total population to be splitted
+
 poprow=rowSums(DEM)
 poprowacum=cumsum(poprow)
 popcol=colSums(DEM)
@@ -88,12 +89,12 @@ popcolacum=cumsum(popcol)
 i=1
 while (poprowacum[i]<population/2) i=i+1
 irowcentre=i
-print(paste0("Row for 1/2 of population: ", irowcentre))  # 447
+print(paste0("Row for 1/2 of population (median): ", irowcentre))  # 447
 
 i=1
 while (popcolacum[i]<population/2) i=i+1
 icolcentre=i
-print(paste0("Column for 1/2 of population: ", icolcentre))  # 1292
+print(paste0("Column for 1/2 of population (median): ", icolcentre))  # 1292
 
 # Draw medians
 img=DEM*0
@@ -108,14 +109,14 @@ r=0
 sumpop=0
 while (sumpop<population/3) {
     r=r+1
-    sumpop=sum(DEM[which( ((row(tmp)-irowcentre))^2 + ((col(tmp)-icolcentre))^2 < r^2 )])
+    sumpop=sum(DEM[which( ((row(DEM)-irowcentre))^2 + ((col(DEM)-icolcentre))^2 < r^2 )])
 }
 rinner=r
 print(paste0("Radius for 1/3 of population: ", rinner))  # 251
 
 while (sumpop<population*2/3) {
     r=r+1
-    sumpop=sum(DEM[which( ((row(tmp)-irowcentre))^2 + ((col(tmp)-icolcentre))^2 < r^2 )])
+    sumpop=sum(DEM[which( ((row(DEM)-irowcentre))^2 + ((col(DEM)-icolcentre))^2 < r^2 )])
 }
 router=r
 print(paste0("Radius for 2/3 of population: ", router))  # 358
@@ -126,6 +127,21 @@ img[which( ((row(img)-irowcentre))^2 + ((col(img)-icolcentre))^2 < router^2 )]=0
 img[which( ((row(img)-irowcentre))^2 + ((col(img)-icolcentre))^2 < rinner^2 )]=1
 writeTIFF(img, "circles.tif", compression='LZW')
 
+
+# Calculate 1/2 radius (median)
+r=0
+sumpop=0
+while (sumpop<population/2) {
+    r=r+1
+    sumpop=sum(DEM[which( ((row(DEM)-irowcentre))^2 + ((col(DEM)-icolcentre))^2 < r^2 )])
+}
+rmedian=r
+print(paste0("Radius for 1/2 of population (median): ", rmedian))  # 300
+
+# Draw circles
+img=DEM*0
+img[which( ((row(img)-irowcentre))^2 + ((col(img)-icolcentre))^2 < rmedian^2 )]=1
+writeTIFF(img, "circles2.tif", compression='LZW')
 
 
 
