@@ -62,11 +62,11 @@ poprow=rowSums(DEM)
 poprowacum=cumsum(poprow)
 
 i=1
-while (poprowacum[i]<population/3) i=i+1
+while (poprowacum[i] < population/3) i=i+1
 isup=i
 print(paste0("Row for 1/3 of population: ", isup))  # 355
 
-while (poprowacum[i]<population*2/3) i=i+1
+while (poprowacum[i] < population*2/3) i=i+1
 iinf=i
 print(paste0("Row for 2/3 of population: ", iinf))  # 581
 
@@ -78,7 +78,7 @@ writeTIFF(img, "flag.tif", compression='LZW')
 
 ###########################################################
 
-# 3. MEDIAN & CIRCLE DISTRIBUTION
+# 3. MEDIAN DISTRIBUTION
 
 population=sum(DEM)  # total population to be split
 
@@ -89,12 +89,12 @@ popcolacum=cumsum(popcol)
 
 # Calculate median
 i=1
-while (poprowacum[i]<population/2) i=i+1
+while (poprowacum[i] < population/2) i=i+1
 irowcentre=i
 print(paste0("Row for 1/2 of population (median): ", irowcentre))  # 447
 
 i=1
-while (popcolacum[i]<population/2) i=i+1
+while (popcolacum[i] < population/2) i=i+1
 icolcentre=i
 print(paste0("Column for 1/2 of population (median): ", icolcentre))  # 1292
 
@@ -114,17 +114,21 @@ quad[2,2]=sum(DEM[(irowcentre+1):DIMY, (icolcentre+1):DIMX])/population  # ~22% 
 write.csv2(quad, "quadrants.csv", quote=FALSE, row.names=FALSE)
 
 
+###########################################################
+
+# 4. CIRCLE DISTRIBUTION
+
 # Calculate 1/3 and 2/3 radius
 r=0
 sumpop=0
-while (sumpop<population/3) {
+while (sumpop < population/3) {
     r=r+1
     sumpop=sum(DEM[which( ((row(DEM)-irowcentre))^2 + ((col(DEM)-icolcentre))^2 < r^2 )])
 }
 rinner=r
 print(paste0("Radius for 1/3 of population: ", rinner))  # 251
 
-while (sumpop<population*2/3) {
+while (sumpop < population*2/3) {
     r=r+1
     sumpop=sum(DEM[which( ((row(DEM)-irowcentre))^2 + ((col(DEM)-icolcentre))^2 < r^2 )])
 }
@@ -138,5 +142,27 @@ img[which( ((row(img)-irowcentre))^2 + ((col(img)-icolcentre))^2 < rinner^2 )]=1
 writeTIFF(img, "circles.tif", compression='LZW')
 
 
+###########################################################
 
+# 5. LOWEST VS HIGHEST POPULATION DENSITY
 
+# Only where solid DEMsolid==1 population must be accounted
+DEMsolid=readTIFF("spainpopsolidREFINED.tif")  # manually cleaned solid map
+indices=which(DEMsolid==0)
+DEM[indices]=NA  # matrix values to be ignored
+rankedindices=order(DEM, decreasing=TRUE)
+rankedvalues=DEM[rankedindices]
+rankedvaluesacum=cumsum(rankedvalues)
+
+PERC=0.8  # where do 80% of population live?
+i=1
+while (rankedvaluesacum[i] < population*PERC) i=i+1
+icut=i
+print(paste0("Count for ", PERC*100, "% of population: ", icut))  # 16358 points
+print(paste0(PERC*100, "% of the population occupies ",
+             round(icut/length(DEMsolid[DEMsolid==1])*100,1),"% of the land"))
+
+# Draw half zones
+img=DEMsolid/2
+img[rankedindices[1:icut]]=1
+writeTIFF(img, "halfs.tif", compression='LZW')
