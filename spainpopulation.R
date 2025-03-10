@@ -49,7 +49,7 @@ writeTIFF((DEM/max(DEM))^(1/2.2), "spainpop.tif", compression='LZW', bits.per.sa
 # Solid map for masking in Photoshop
 DEMsolid=DEM
 DEMsolid[DEMsolid>0]=1
-writeTIFF(DEMsolid, "spainpopsolid.tif", compression='LZW', bits.per.sample=16)
+writeTIFF(DEMsolid, "spainpopsolid.tif", compression='LZW')
 
 
 ###########################################################
