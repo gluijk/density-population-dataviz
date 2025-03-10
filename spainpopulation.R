@@ -103,6 +103,14 @@ img[(irowcentre+1):DIMY,1:icolcentre]=2/3
 img[(irowcentre+1):DIMY,(icolcentre+1):DIMX]=1/3
 writeTIFF(img, "quarters.tif", compression='LZW')
 
+# Check quadrants: cross population match -> NO=SE and NE=SO
+quad=matrix(0, nrow=2, ncol=2)
+quad[1,1]=sum(DEM[1:irowcentre, 1:icolcentre])/population  # ~22% (NO)
+quad[2,1]=sum(DEM[(irowcentre+1):DIMY, 1:icolcentre])/population  # ~28% (SO)
+quad[1,2]=sum(DEM[1:irowcentre, (icolcentre+1):DIMX])/population  # ~28% (NE)
+quad[2,2]=sum(DEM[(irowcentre+1):DIMY, (icolcentre+1):DIMX])/population  # ~22% (SE)
+write.csv2(quad, "quadrants.csv", quote=FALSE, row.names=FALSE)
+
 
 # Calculate 1/3 and 2/3 radius
 r=0
