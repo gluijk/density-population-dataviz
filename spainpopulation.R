@@ -123,22 +123,22 @@ r=0
 sumpop=0
 while (sumpop < population/3) {
     r=r+1
-    sumpop=sum(DEM[which( ((row(DEM)-irowcentre))^2 + ((col(DEM)-icolcentre))^2 < r^2 )])
+    sumpop=sum(DEM[which( (row(DEM)-irowcentre)^2 + (col(DEM)-icolcentre)^2 < r^2 )])
 }
 rinner=r
 print(paste0("Radius for 1/3 of population: ", rinner))  # 251
 
 while (sumpop < population*2/3) {
     r=r+1
-    sumpop=sum(DEM[which( ((row(DEM)-irowcentre))^2 + ((col(DEM)-icolcentre))^2 < r^2 )])
+    sumpop=sum(DEM[which( (row(DEM)-irowcentre)^2 + (col(DEM)-icolcentre)^2 < r^2 )])
 }
 router=r
 print(paste0("Radius for 2/3 of population: ", router))  # 358
 
 # Draw circles
 img=DEM*0
-img[which( ((row(img)-irowcentre))^2 + ((col(img)-icolcentre))^2 < router^2 )]=0.5
-img[which( ((row(img)-irowcentre))^2 + ((col(img)-icolcentre))^2 < rinner^2 )]=1
+img[which( (row(img)-irowcentre)^2 + (col(img)-icolcentre)^2 < router^2 )]=0.5
+img[which( (row(img)-irowcentre)^2 + (col(img)-icolcentre)^2 < rinner^2 )]=1
 writeTIFF(img, "circles.tif", compression='LZW')
 
 
