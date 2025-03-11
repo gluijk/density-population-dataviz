@@ -1,6 +1,6 @@
 # Visualizing a density population map according to geometrical distributions
 # www.overfitting.net
-# https://www.overfitting.net/
+# https://www.overfitting.net/2025/03/visualizando-densidades-de-poblacion.html
 
 
 library(terra)  # read GeoTIFF, reprojection, crop and resample
@@ -146,10 +146,7 @@ writeTIFF(img, "circles.tif", compression='LZW')
 
 # 5. LOWEST VS HIGHEST POPULATION DENSITY
 
-# Only where solid DEMsolid==1 population must be accounted
-DEMsolid=readTIFF("spainpopsolidREFINED.tif")  # manually cleaned solid map
-indices=which(DEMsolid==0)
-DEM[indices]=NA  # matrix values to be ignored
+# Rank each value in DEM from max to min population density
 rankedindices=order(DEM, decreasing=TRUE)
 rankedvalues=DEM[rankedindices]
 rankedvaluesacum=cumsum(rankedvalues)
@@ -166,3 +163,6 @@ print(paste0(PERC*100, "% of the population occupies ",
 img=DEMsolid/2
 img[rankedindices[1:icut]]=1
 writeTIFF(img, "halfs.tif", compression='LZW')
+
+
+
